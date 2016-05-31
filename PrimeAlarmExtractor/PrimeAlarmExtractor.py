@@ -6,8 +6,9 @@
 #   May 2016
 #
 #   REQUIREMENTS:
-#       It needs the PrimeAPI module for easy access to the
-#       Prime Infrastructure API.
+#       It needs the PrimeAPI module for easy access to the Prime Infrastructure API.
+#       This moduled was written by Christian Jaekel (chjaecke@cisco.com) 
+#       and can be found at https://github.com/chjaecke/Prime-Infrastructure-Tools
 #
 #       It also needs the "requests" python library, which you can easily download.
 #           (issue the "pip install requests" command in shell or cmd)
@@ -17,9 +18,11 @@
 #       PRIME_URL = the url to your Prime Infrasture 3.0 instance
 #       PRIME_USER = the username with which you want to log in to Prime
 #       PRIME_PW = the password with which you want to log in to Prime
+#       
 #       SPARK_AUTH_TOKEN = your auth Token to access Spark via the REST API
 #       SPARK_ROOM_ID = the room ID of the room you want to post into
 #       SPARK_URL = the url to the SPARP API (probably https://api.ciscospark.com/v1/messages)
+#       
 #       TROPO_PHONE_NR = the phone number you want to dial via tropo. Include the country code, but omit the "+"
 #           (so for Germany this could be 49151282828 for instance, since +49 is the country code...)
 #
@@ -55,7 +58,7 @@ def fetch_alerts(api, daysToSearch):
     """ fetch all critical alerts from PI between the start date and today. """
     try:
 
-        # get current date and date 48 hours prior.
+        # get current date and the date X days back.
         startDay = time.strftime("%Y-%m-%d",time.localtime((time.time() - (daysToSearch*24*60*60))))
         today = time.strftime("%Y-%m-%d",time.localtime(time.time()))
 
