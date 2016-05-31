@@ -1,3 +1,15 @@
+# Ignore everything
+*
+
+# But not these files...
+!.gitignore
+!SparkStockTicker.py
+!PrimeAlarmExtractor.py
+!TrackedPing.cs
+
+# ...even if they are in subdirectories
+!*/
+
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
