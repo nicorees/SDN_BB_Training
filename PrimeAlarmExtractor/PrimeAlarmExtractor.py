@@ -51,19 +51,19 @@ SPARK_URL = ""
 TROPO_AUTH_TOKEN = ""
 TROPO_PHONE_NR = ""
 
-def fetch_alerts(api):
-    """ fetch all alerts from PI within the last 48 hours which are critical. """
+def fetch_alerts(api, daysToSearch):
+    """ fetch all critical alerts from PI between the start date and today. """
     try:
 
         # get current date and date 48 hours prior.
-        yesterday = time.strftime("%Y-%m-%d",time.localtime((time.time() - 172800)))
+        startDay = time.strftime("%Y-%m-%d",time.localtime((time.time() - (daysToSearch*24*60*60))))
         today = time.strftime("%Y-%m-%d",time.localtime(time.time()))
 
-        print("Fetching all critical Alerts between " + yesterday + " and " + today + ".")
+        print("Fetching all critical Alerts between " + startDay + " and " + today + ".")
         print()
       
         # issue API call to PI for critical alerts between today and yesterday
-        response = api.send_prime_request("data/Alarms?severity=CRITICAL&alarmFoundAt=between(\"" + yesterday + "\",\"" + today + "\")", "XML")
+        response = api.send_prime_request("data/Alarms?severity=CRITICAL&alarmFoundAt=between(\"" + startDay + "\",\"" + today + "\")", "XML")
         
         # write all IDs of the fetches alarms to a list
         alarmIDs = list()
@@ -96,17 +96,15 @@ def fetch_alerts_text(alarmIDs, api):
 
     return messages
 
-def build_notification_string(messages):
+def build_notification_string(messages, daysToSearch):
     """piece together the notification message as a string for the SPARK and TROPO API calls"""
 
-    notificationMessage = "There were a total of " + str(len(messages)) + " critical alerts in the last 48 hours. "
+    notificationMessage = "There were a total of " + str(len(messages)) + " critical alerts in the last " + str(daysToSearch) + " days. "
 
     # iterate over the messages list and append each message to the notification string
     for message in messages:
         notificationMessage += "Alert number " + str(messages.index(message)+1) + ". "
         notificationMessage += message + " "
-
-    notificationMessage += "Goodbye... And Good Luck."
 
     # write the notification string to the console
     print(notificationMessage)  
@@ -133,6 +131,7 @@ def issue_tropo_call(notificationMessage):
     """issue an API call to Tropo, for calling the network admin and reading the notification message to him"""
 
     # replace whitespaces with "+" for correct get-parameter http url encoding
+    notificationMessage += "Goodbye... And Good Luck."
     tropoNotificationMessage = notificationMessage.replace(" ", "+")
 
     # issue the API call to TROPO
@@ -198,17 +197,21 @@ def main():
 
     print("Access to PI successful")
     print()
+
+    daysToSearch = int(input("Enter the amount of days, which you want to search back for critical alerts: "))
+
+    print()
     input("Press RETURN to continue with fetching the alarms from Prime...")
     print()
 
     # calling our alarm extraction function and writing result to variable
-    alarmIDs = fetch_alerts(api)
+    alarmIDs = fetch_alerts(api, daysToSearch)
 
     # fetching all messages for all prior gathered alerts and writing result to variable
     messages = fetch_alerts_text(alarmIDs, api)
 
     # piecing together the notification message as string for SPARK and TROPO API calls and saving to variable
-    notificationMessage = build_notification_string(messages)
+    notificationMessage = build_notification_string(messages, daysToSearch)
 
     # pause for better demo effect
     print()
